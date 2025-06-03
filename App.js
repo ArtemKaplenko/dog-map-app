@@ -2,8 +2,35 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Dimensions, Modal } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { TextInput, Button, Provider as PaperProvider } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 import dogIcon from './assets/dog-icon.png';
 import customStyleMap from './assets/style-map';
+
+
+const DOGS_STORAGE_KEY = 'DOGS_STORAGE'; // Ключ для хранения данных о собаках в AsyncStorage
+
+// Загрузка данных о собаках в AsyncStorage
+const saveDogs = async (dogs) => {
+  try {
+    const jsonValue = JSON.stringify(dogs);
+    await AsyncStorage.setItem(DOGS_STORAGE_KEY, jsonValue);
+  } catch (e) {
+    console.error('Ошибка при сохранении собак:', e);
+  }
+};
+
+// Функция для загрузки данных о собаках из AsyncStorage
+const loadDogs = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(DOGS_STORAGE_KEY);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error('Ошибка при загрузке собак:', e);
+    return [];
+  }
+};
+
 
 export default function App() {
   const [dogs, setDogs] = useState([]);
@@ -12,13 +39,21 @@ export default function App() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [radius, setRadius] = useState('100');
-
+  
   const handleMapPress = (event) => {
     setNewDogLocation(event.nativeEvent.coordinate);
     setModalVisible(true);
   };
+    
+  // Загрузка данных о собаках при первом запуске приложения
+  useEffect(() => {
+    (async () => {
+      const loadedDogs = await loadDogs();
+      setDogs(loadedDogs);
+    })();
+  }, []);
 
-  const handleAddDog = () => {
+  const handleAddDog = async () => {
     const newDog = {
       id: Date.now(),
       name: name || 'Без имени',
@@ -26,7 +61,10 @@ export default function App() {
       location: newDogLocation,
       radius: parseFloat(radius) || 100,
     };
-    setDogs([...dogs, newDog]);
+    const updatedDogs = [...dogs, newDog];
+    setDogs(updatedDogs);
+    await saveDogs(updatedDogs); // Сохраняем
+
     // Сброс формы
     setName('');
     setDescription('');
@@ -91,8 +129,12 @@ export default function App() {
                 mode="outlined"
                 style={styles.input}
               />
-              <Button mode="contained" onPress={handleAddDog}>
+
+              <Button mode="contained" onPress={handleAddDog} style={styles.button}>
                 Добавить
+              </Button>
+              <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.button}>
+                Отмена
               </Button>
             </View>
           </View>
@@ -121,5 +163,8 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 10,
+  },
+  button: {
+  marginTop: 10,
   },
 });
