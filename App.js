@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Dimensions, Modal } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { TextInput, Button, Provider as PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
 import dogIcon from './assets/dog-icon.png';
 import customStyleMap from './assets/style-map';
 
@@ -39,6 +38,9 @@ export default function App() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [radius, setRadius] = useState('100');
+  const [selectedDog, setSelectedDog] = useState(null); // Для хранения выбранной собаки
+  const [editVisible, setEditVisible] = useState(false); // Для управления видимостью формы редактирования
+  const [countPress, setCountPress] = useState(0); // Счетчик нажатий на метку
   
   const handleMapPress = (event) => {
     setNewDogLocation(event.nativeEvent.coordinate);
@@ -93,6 +95,14 @@ export default function App() {
                 title={dog.name}
                 description={dog.description}
                 image={dogIcon}
+                onPress={() => {
+                  setCountPress(countPress + 1);
+                  if(countPress >= 2 && selectedDog && selectedDog.id === dog.id) {
+                    setCountPress(0);
+                    setEditVisible(true);
+                  }
+                  setSelectedDog(dog);
+                  }}
               />
               <Circle
                 center={dog.location}
@@ -103,7 +113,8 @@ export default function App() {
             </React.Fragment>
           ))}
         </MapView>
-
+          
+          {/* Кнопка для добавления новой собаки */}
         <Modal visible={modalVisible} transparent animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.form}>
@@ -134,6 +145,59 @@ export default function App() {
                 Добавить
               </Button>
               <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.button}>
+                Отмена
+              </Button>
+            </View>
+          </View>
+        </Modal>
+
+          {/* Модальное окно для редактирования собаки */}
+        <Modal visible={editVisible} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.form}>
+              <TextInput
+                label="Имя собаки"
+                value={selectedDog ? selectedDog.name : ''}
+                onChangeText={(text) => setSelectedDog({ ...selectedDog, name: text })}
+                mode="outlined"
+                style={styles.input}
+              />
+              <TextInput
+                label="Описание"
+                value={selectedDog ? selectedDog.description : ''}
+                onChangeText={(text) => setSelectedDog({ ...selectedDog, description: text })}
+                mode="outlined"
+                style={styles.input}
+              />
+              <TextInput
+                label="Радиус обитания (м)"
+                value={selectedDog ? String(selectedDog.radius) : ''}
+                onChangeText={(text) => setSelectedDog({ ...selectedDog, radius: parseFloat(text) })}
+                keyboardType="numeric"
+                mode="outlined"
+                style={styles.input}
+              />
+
+              <Button mode="contained" onPress={() => {
+                  const updatedDogs = dogs.map(dog => dog.id === selectedDog.id ? selectedDog : dog);
+                  setDogs(updatedDogs);
+                  saveDogs(updatedDogs);
+                  setEditVisible(false);
+                  setSelectedDog(null);
+                }} style={styles.button}>
+                Сохранить
+              </Button>
+              <Button mode="contained" onPress={() => {
+                setDogs(dogs.filter(dog => dog.id !== selectedDog.id));
+                setEditVisible(false);
+                setSelectedDog(null);
+              }} style={styles.button} color="red">
+                Удалить
+              </Button>
+              <Button mode="outlined" onPress={() => {
+                  setEditVisible(false);
+                  setSelectedDog(null);
+                }} style={styles.button}>
                 Отмена
               </Button>
             </View>
