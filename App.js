@@ -5,6 +5,8 @@ import { TextInput, Button, Provider as PaperProvider } from 'react-native-paper
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dogIcon from './assets/dog-icon.png';
 import customStyleMap from './assets/style-map';
+import AddForm from './src/components/AddForm';
+import EditForm from './src/components/EditForm';
 
 
 const DOGS_STORAGE_KEY = 'DOGS_STORAGE'; // Ключ для хранения данных о собаках в AsyncStorage
@@ -34,13 +36,20 @@ const loadDogs = async () => {
 export default function App() {
   const [dogs, setDogs] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [newDogLocation, setNewDogLocation] = useState(null);
+  const [selectedDog, setSelectedDog] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [radius, setRadius] = useState('100');
+<<<<<<< HEAD
   const [selectedDog, setSelectedDog] = useState(null); // Для хранения выбранной собаки
   const [editVisible, setEditVisible] = useState(false); // Для управления видимостью формы редактирования
   const [countPress, setCountPress] = useState(0); // Счетчик нажатий на метку
+=======
+  const [lastPressedId, setLastPressedId] = useState(null);
+  const [lastPressTime, setLastPressTime] = useState(0);
+>>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
   
   const handleMapPress = (event) => {
     setNewDogLocation(event.nativeEvent.coordinate);
@@ -54,6 +63,18 @@ export default function App() {
       setDogs(loadedDogs);
     })();
   }, []);
+
+  const handleMarkerPress = (dog) => {
+    const now = Date.now();
+    if (lastPressedId === dog.id && now - lastPressTime < 1000) {
+      setEditModalVisible(true);
+      setSelectedDog(dog);
+    } else {
+      setLastPressedId(dog.id);
+      setLastPressTime(now);
+      setSelectedDog(dog);
+    }
+  };
 
   const handleAddDog = async () => {
     const newDog = {
@@ -73,6 +94,34 @@ export default function App() {
     setRadius('100');
     setModalVisible(false);
   };
+
+  const handleEditDog = async () => {
+      const newDog = { ...selectedDog };
+      const updatedDogs = dogs.map((dog) => {
+        if (dog.id === newDog.id) {
+          return newDog;
+        }
+        return dog;
+      });
+      setDogs(updatedDogs);
+      await saveDogs(updatedDogs); // Сохраняем изменения
+       
+      setName('');
+      setDescription('');
+      setRadius('100');
+      setEditModalVisible(false);
+  };
+
+  const handleDeleteDog = async () => {
+    const updatedDogs = dogs.filter((dog) => dog.id !== selectedDog.id);
+    setDogs(updatedDogs);
+    await saveDogs(updatedDogs); // Сохраняем изменения
+
+    setName('');
+    setDescription('');
+    setRadius('100');
+    setEditModalVisible(false);
+  }
 
   return (
     <PaperProvider>
@@ -95,6 +144,7 @@ export default function App() {
                 title={dog.name}
                 description={dog.description}
                 image={dogIcon}
+<<<<<<< HEAD
                 onPress={() => {
                   setCountPress(countPress + 1);
                   if(countPress >= 2 && selectedDog && selectedDog.id === dog.id) {
@@ -103,6 +153,10 @@ export default function App() {
                   }
                   setSelectedDog(dog);
                   }}
+=======
+                anchor={{ x: 0.5, y: 0.5 }}
+                onPress={() => {handleMarkerPress(dog)}}
+>>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
               />
               <Circle
                 center={dog.location}
@@ -113,6 +167,7 @@ export default function App() {
             </React.Fragment>
           ))}
         </MapView>
+<<<<<<< HEAD
           
           {/* Кнопка для добавления новой собаки */}
         <Modal visible={modalVisible} transparent animationType="slide">
@@ -203,6 +258,29 @@ export default function App() {
             </View>
           </View>
         </Modal>
+=======
+        
+        <AddForm
+          visible={modalVisible}
+          name={name}
+          setName={setName}
+          description={description}
+          setDescription={setDescription}
+          radius={radius}
+          setRadius={setRadius}
+          onAdd={handleAddDog}
+          onCancel={() => setModalVisible(false)}
+        />
+
+        <EditForm
+          visible={editModalVisible}
+          selectedDog={selectedDog}
+          onChange={setSelectedDog}
+          onSave={handleEditDog}
+          onDelete={handleDeleteDog}
+          onCancel={() => setEditModalVisible(false)}
+          />
+>>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
       </View>
     </PaperProvider>
   );
