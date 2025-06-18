@@ -1,12 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { TextInput, Button } from 'react-native-paper';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { TextInput, Button, Checkbox } from 'react-native-paper';
+import { Animated, StyleSheet, View, Text } from 'react-native';
 
 const EditForm = ({ visible, selectedDog, onChange, onSave, onCancel, onDelete}) => {
     if(!visible || !selectedDog) return null;
 
+    const slideAnim = useRef(new Animated.Value(1000)).current;
+
+    useEffect(() => {
+    Animated.timing(slideAnim, {
+        toValue: visible ? 0 : 1000,
+        duration: 300,
+        useNativeDriver: true,
+    }).start();
+    }, [visible]);
+
     return(
-        <View style={styles.formContainer}>
+        <Animated.View style={[styles.formContainer, { transform: [{ translateX: slideAnim }] }]}>
             <View style={styles.formHeader}>
                 <Text style={{ color: 'white', fontSize: 20, paddingLeft: 10, paddingTop: 20 }}>
                     Редактировать запись
@@ -20,6 +30,11 @@ const EditForm = ({ visible, selectedDog, onChange, onSave, onCancel, onDelete})
                     mode = 'outlined'
                     style = {styles.input}
                 />
+                <Checkbox.Item
+                    label = 'Собака агрессивна'
+                    status= {selectedDog.isAggressive ? 'checked' : 'unchecked'}
+                    onPress={() => onChange({...selectedDog, isAggressive: !selectedDog.isAggressive})}
+                />
                 <TextInput
                     label = "Описание"
                     value = {selectedDog.description}
@@ -30,7 +45,7 @@ const EditForm = ({ visible, selectedDog, onChange, onSave, onCancel, onDelete})
                 <TextInput
                     label = "Радиус обитания (м)"
                     value = {selectedDog.radius.toString()}
-                    onChangeText = {(text) => onChange({...selectedDog, redius: parseFloat(text) || 0})}
+                    onChangeText = {(text) => onChange({...selectedDog, radius: parseFloat(text) || 0})}
                     keyboardType = "numeric"
                     mode = 'outlined'
                     style = {styles.input}
@@ -46,7 +61,7 @@ const EditForm = ({ visible, selectedDog, onChange, onSave, onCancel, onDelete})
                     Отмена
                 </Button>
             </View>
-        </View>
+        </Animated.View>
     );
 };
 
@@ -59,6 +74,7 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: 'white',
         zIndex: 10,
+         elevation: 4,
     },
     formHeader: {
         backgroundColor: '#32a860',

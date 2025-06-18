@@ -3,7 +3,8 @@ import { StyleSheet, View, Dimensions, Modal } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { TextInput, Button, Provider as PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import dogIcon from './assets/dog-icon.png';
+import dogImgMarker from './assets/dog-marker.png';
+import dogImgAggressiveMarker from './assets/dog-aggressive-marker.png';
 import customStyleMap from './assets/style-map';
 import AddForm from './src/components/AddForm';
 import EditForm from './src/components/EditForm';
@@ -42,14 +43,9 @@ export default function App() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [radius, setRadius] = useState('100');
-<<<<<<< HEAD
-  const [selectedDog, setSelectedDog] = useState(null); // Для хранения выбранной собаки
-  const [editVisible, setEditVisible] = useState(false); // Для управления видимостью формы редактирования
-  const [countPress, setCountPress] = useState(0); // Счетчик нажатий на метку
-=======
+  const [isAggressive, setIsAggressive] = useState(false);
   const [lastPressedId, setLastPressedId] = useState(null);
   const [lastPressTime, setLastPressTime] = useState(0);
->>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
   
   const handleMapPress = (event) => {
     setNewDogLocation(event.nativeEvent.coordinate);
@@ -83,6 +79,7 @@ export default function App() {
       description: description || 'Без описания',
       location: newDogLocation,
       radius: parseFloat(radius) || 100,
+      isAggressive: isAggressive || false,
     };
     const updatedDogs = [...dogs, newDog];
     setDogs(updatedDogs);
@@ -92,6 +89,7 @@ export default function App() {
     setName('');
     setDescription('');
     setRadius('100');
+    setIsAggressive(false);
     setModalVisible(false);
   };
 
@@ -105,10 +103,7 @@ export default function App() {
       });
       setDogs(updatedDogs);
       await saveDogs(updatedDogs); // Сохраняем изменения
-       
-      setName('');
-      setDescription('');
-      setRadius('100');
+
       setEditModalVisible(false);
   };
 
@@ -117,9 +112,6 @@ export default function App() {
     setDogs(updatedDogs);
     await saveDogs(updatedDogs); // Сохраняем изменения
 
-    setName('');
-    setDescription('');
-    setRadius('100');
     setEditModalVisible(false);
   }
 
@@ -143,20 +135,9 @@ export default function App() {
                 coordinate={dog.location}
                 title={dog.name}
                 description={dog.description}
-                image={dogIcon}
-<<<<<<< HEAD
-                onPress={() => {
-                  setCountPress(countPress + 1);
-                  if(countPress >= 2 && selectedDog && selectedDog.id === dog.id) {
-                    setCountPress(0);
-                    setEditVisible(true);
-                  }
-                  setSelectedDog(dog);
-                  }}
-=======
+                image={dog.isAggressive ? dogImgAggressiveMarker : dogImgMarker}
                 anchor={{ x: 0.5, y: 0.5 }}
                 onPress={() => {handleMarkerPress(dog)}}
->>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
               />
               <Circle
                 center={dog.location}
@@ -167,98 +148,6 @@ export default function App() {
             </React.Fragment>
           ))}
         </MapView>
-<<<<<<< HEAD
-          
-          {/* Кнопка для добавления новой собаки */}
-        <Modal visible={modalVisible} transparent animationType="slide">
-          <View style={styles.modalContainer}>
-            <View style={styles.form}>
-              <TextInput
-                label="Имя собаки"
-                value={name}
-                onChangeText={setName}
-                mode="outlined"
-                style={styles.input}
-              />
-              <TextInput
-                label="Описание"
-                value={description}
-                onChangeText={setDescription}
-                mode="outlined"
-                style={styles.input}
-              />
-              <TextInput
-                label="Радиус обитания (м)"
-                value={radius}
-                onChangeText={setRadius}
-                keyboardType="numeric"
-                mode="outlined"
-                style={styles.input}
-              />
-
-              <Button mode="contained" onPress={handleAddDog} style={styles.button}>
-                Добавить
-              </Button>
-              <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.button}>
-                Отмена
-              </Button>
-            </View>
-          </View>
-        </Modal>
-
-          {/* Модальное окно для редактирования собаки */}
-        <Modal visible={editVisible} transparent animationType="slide">
-          <View style={styles.modalContainer}>
-            <View style={styles.form}>
-              <TextInput
-                label="Имя собаки"
-                value={selectedDog ? selectedDog.name : ''}
-                onChangeText={(text) => setSelectedDog({ ...selectedDog, name: text })}
-                mode="outlined"
-                style={styles.input}
-              />
-              <TextInput
-                label="Описание"
-                value={selectedDog ? selectedDog.description : ''}
-                onChangeText={(text) => setSelectedDog({ ...selectedDog, description: text })}
-                mode="outlined"
-                style={styles.input}
-              />
-              <TextInput
-                label="Радиус обитания (м)"
-                value={selectedDog ? String(selectedDog.radius) : ''}
-                onChangeText={(text) => setSelectedDog({ ...selectedDog, radius: parseFloat(text) })}
-                keyboardType="numeric"
-                mode="outlined"
-                style={styles.input}
-              />
-
-              <Button mode="contained" onPress={() => {
-                  const updatedDogs = dogs.map(dog => dog.id === selectedDog.id ? selectedDog : dog);
-                  setDogs(updatedDogs);
-                  saveDogs(updatedDogs);
-                  setEditVisible(false);
-                  setSelectedDog(null);
-                }} style={styles.button}>
-                Сохранить
-              </Button>
-              <Button mode="contained" onPress={() => {
-                setDogs(dogs.filter(dog => dog.id !== selectedDog.id));
-                setEditVisible(false);
-                setSelectedDog(null);
-              }} style={styles.button} color="red">
-                Удалить
-              </Button>
-              <Button mode="outlined" onPress={() => {
-                  setEditVisible(false);
-                  setSelectedDog(null);
-                }} style={styles.button}>
-                Отмена
-              </Button>
-            </View>
-          </View>
-        </Modal>
-=======
         
         <AddForm
           visible={modalVisible}
@@ -268,6 +157,8 @@ export default function App() {
           setDescription={setDescription}
           radius={radius}
           setRadius={setRadius}
+          isAggressive={isAggressive}
+          setIsAggressive={setIsAggressive}
           onAdd={handleAddDog}
           onCancel={() => setModalVisible(false)}
         />
@@ -280,7 +171,6 @@ export default function App() {
           onDelete={handleDeleteDog}
           onCancel={() => setEditModalVisible(false)}
           />
->>>>>>> 8f7bfb5 (adding and editing forms are moved to separate components)
       </View>
     </PaperProvider>
   );
