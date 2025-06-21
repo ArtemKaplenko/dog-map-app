@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Dimensions, Modal } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
-import { TextInput, Button, Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// мои импорты
 import dogImgMarker from './assets/dog-marker.png';
 import dogImgAggressiveMarker from './assets/dog-aggressive-marker.png';
 import customStyleMap from './assets/style-map';
 import AddForm from './src/components/AddForm';
 import EditForm from './src/components/EditForm';
+import InfoForm from './src/components/InfoForm';
 
 
 const DOGS_STORAGE_KEY = 'DOGS_STORAGE'; // Ключ для хранения данных о собаках в AsyncStorage
@@ -46,6 +48,8 @@ export default function App() {
   const [isAggressive, setIsAggressive] = useState(false);
   const [lastPressedId, setLastPressedId] = useState(null);
   const [lastPressTime, setLastPressTime] = useState(0);
+
+  const [infoVisible, setInfoVisible] = useState(false);
   
   const handleMapPress = (event) => {
     setNewDogLocation(event.nativeEvent.coordinate);
@@ -61,15 +65,8 @@ export default function App() {
   }, []);
 
   const handleMarkerPress = (dog) => {
-    const now = Date.now();
-    if (lastPressedId === dog.id && now - lastPressTime < 1000) {
-      setEditModalVisible(true);
-      setSelectedDog(dog);
-    } else {
-      setLastPressedId(dog.id);
-      setLastPressTime(now);
-      setSelectedDog(dog);
-    }
+    setInfoVisible(true);
+    setSelectedDog(dog);
   };
 
   const handleAddDog = async () => {
@@ -137,7 +134,7 @@ export default function App() {
                 description={dog.description}
                 image={dog.isAggressive ? dogImgAggressiveMarker : dogImgMarker}
                 anchor={{ x: 0.5, y: 0.5 }}
-                onPress={() => {handleMarkerPress(dog)}}
+                onPress={() => handleMarkerPress(dog)}
               />
               <Circle
                 center={dog.location}
@@ -171,7 +168,17 @@ export default function App() {
           onDelete={handleDeleteDog}
           onCancel={() => setEditModalVisible(false)}
           />
-      </View>
+
+          <InfoForm
+            visible={infoVisible}
+            dog={selectedDog}
+            onClose={() => setInfoVisible(false)}
+            onEdit={() => {
+              setEditModalVisible(true);
+              setInfoVisible(false);
+            }}
+          />
+          </View>
     </PaperProvider>
   );
 }
