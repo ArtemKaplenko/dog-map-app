@@ -46,6 +46,12 @@ const EditForm = ({ visible, selectedDog, onChange, onSave, onCancel, onDelete }
           onPress={() => onChange({ ...selectedDog, isAggressive: !selectedDog.isAggressive })}
         />
 
+        <Checkbox.Item
+          label="Присутствует бирка"
+          status={selectedDog.hasLabel ? 'checked' : 'unchecked'}
+          onPress={() => onChange({ ...selectedDog, hasLabel: !selectedDog.hasLabel })}
+        />
+
         <TextInput
           label="Описание"
           value={selectedDog.description || ''}

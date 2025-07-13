@@ -26,10 +26,28 @@ const InfoForm = ({ visible, dog, onClose, onEdit }) => {
       ]}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>{dog.name || 'Без имени'}</Text>
-        <Text>Описание: {dog.description || 'Нет данных'}</Text>
-        <Text>Радиус: {dog.radius} м</Text>
-        <Text>Агрессивна: {dog.isAggressive ? 'Да' : 'Нет'}</Text>
+        <View>
+          <Text style={styles.title}>{dog.name || 'Без имени'}</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text>Описание:</Text>
+          <Text>{dog.description || 'Нет данных'}</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text>Радиус:</Text>
+          <Text>{dog.radius} м</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text>Агрессивна:</Text>
+          <Text style={[
+            styles.statusInfo,
+            dog.isAggressive ? styles.statusAggresive : styles.statusFriendly
+            ]}>{dog.isAggressive ? 'Да' : 'Нет'}</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text>Есть бирка:</Text>
+          <Text>{dog.hasLabel ? 'Да' : 'Нет'}</Text>
+        </View>
 
         <View style={styles.buttons}>
           <Button mode="contained" onPress={onEdit} style={styles.button}>
@@ -75,6 +93,29 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
+  infoItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    fontSize: 15,
+    marginTop: 10,
+    padding: 5,
+  },
+  statusInfo: {
+    color: '#ffffff',
+    borderRadius: 10,
+    width: 40,
+    textAlign: 'center'
+  },
+  statusAggresive: {
+    backgroundColor: '#ee5a52',
+  },
+  statusFriendly: {
+    backgroundColor: '#40c057',
+  }
 });
 
 export default InfoForm;

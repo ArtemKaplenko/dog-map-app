@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TextInput, Button, Checkbox } from 'react-native-paper';
 import { Animated, StyleSheet, View, Text } from 'react-native';
 
-const AddForm = ({ visible, name, setName, description, setDescription, radius, setRadius, isAggressive, setIsAggressive, onAdd, onCancel }) => {
+const AddForm = ({ visible, name, setName, description, setDescription, radius, setRadius,
+                  isAggressive, setIsAggressive, hasLabel, setHasLabel, onAdd, onCancel }) => {
   const slideAnim = useRef(new Animated.Value(1000)).current;
 
   useEffect(() => {
@@ -32,6 +33,11 @@ const AddForm = ({ visible, name, setName, description, setDescription, radius, 
                 label="Собака агресивна"
                 status={isAggressive ? 'checked' : 'unchecked'}
                 onPress={() => setIsAggressive(!isAggressive)}
+            />
+            <Checkbox.Item
+                label="Присутствует бирка"
+                status={hasLabel ? 'checked' : 'unchecked'}
+                onPress={() => setHasLabel(!hasLabel)}
             />
             <TextInput
                 label="Описание"
